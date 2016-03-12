@@ -24,6 +24,9 @@ namespace DataBaseUtilities
 		static string gProcDir = "Proc";
 		static SqlConnection gConnection = null;
 
+		// TODO: Currently this utility is targeted for Microsoft SQL Server. Other servers 
+		// should be included with a server=MSSQL as default.
+
 		static void Main(string[] args)
 		{
 			Console.WriteLine("DBDev: Data Base Development utility.");
