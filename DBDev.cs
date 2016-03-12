@@ -25,7 +25,7 @@ namespace DataBaseUtilities
 		static SqlConnection gConnection = null;
 
 		// TODO: Currently this utility is targeted for Microsoft SQL Server. Other servers 
-		// should be included with a server=MSSQL as default.
+		// should be included with a server=MSSQL as default.  (MySQL to start with).
 
 		static void Main(string[] args)
 		{
