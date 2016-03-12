@@ -1,0 +1,22 @@
+Software development almost always involves databases. Done properly there should be a separate 
+server for each phase: DEV, QA, UAT and PROD. Changes to DEV need to propogate to the others and
+that is the problem: How to know what changes have been made to which servers and which haven't.
+
+Stored Procedures, Views, Triggers and Functions need be created as script files, stored under 
+the project folder (e.g. "c:\myProject\DB\Procs"). Then to update or synchronize a server just 
+run all the scripts. It can be managed as a manual process but is only workable where there are
+only a few scripts.
+
+All (and I do mean ALL) DDL commands (creating, altering, dropping of the tables and indexes) 
+should be performed as sequentially named script files also stored in a folder under the project 
+folder (e.g. "c:\myProject\DB\Deltas"). Include everything as scripts: create a table, add a 
+column to that table, drop that column, add an index to that table, change the index, etc. By
+scripting all the deltas you can create the whole database; just runn the sequence. One good 
+way is to date each change file (e.g. 20160322A.sql). Also, include in the database a table
+of all the scripts that have been run on this database so you can track what has and hasn't 
+been run.
+
+My utility DBDev handles all this for you: 
+  1) it compares the list of files in the deltas folder with the deltas table and runs, 
+  in order, the un-run scripts and adds them to the table
+  2) it runs all the scripts in the procs folder to refresh the stored procedures.
