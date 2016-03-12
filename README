@@ -1,4 +1,4 @@
-Software development almost always involves databases. Done properly there should be a separate 
+Software development almost always involves a database. Done properly there should be a separate 
 server for each phase: DEV, QA, UAT and PROD. Changes to DEV need to propogate to the others and
 that is the problem: How to know what changes have been made to which servers and which haven't.
 
