@@ -16,7 +16,14 @@ way is to date each change file (e.g. 20160322A.sql). Also, include in the datab
 of all the scripts that have been run on this database so you can track what has and hasn't 
 been run.
 
-My utility DBDev handles all this for you: 
-  1) it compares the list of files in the deltas folder with the deltas table and runs, 
+My utility DBDev handles all this (and more) for you: 
+  1) If the database doesn't exist it creates it.
+  2) If the deltas table doesn't exist it creates it.
+  3) it compares the list of files in the deltas folder with the deltas table and runs, 
   in order, the un-run scripts and adds them to the table
-  2) it runs all the scripts in the procs folder to refresh the stored procedures.
+  4) it runs all the scripts in the procs folder to refresh the stored procedures.
+
+To run it requires three parameters: 
+  1) the connection string to the database.
+  2) the name of the database (it doesn't need to exist on the given server yet)
+  3) the path to the project (under which the db folder resides)
