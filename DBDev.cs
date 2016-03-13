@@ -39,7 +39,7 @@ namespace DataBaseUtilities
 					{
 						gConnection.Open();
 						CreateDB();
-						ProcDeltas();
+						ProcessDeltas();
 						UpdateSPs();
 					}
 				}
@@ -55,7 +55,7 @@ namespace DataBaseUtilities
 			}
 		}
 
-		static void ProcDeltas()
+		static void ProcessDeltas()
 		{
 			if (gDoDeltas)
 			{
@@ -88,6 +88,11 @@ namespace DataBaseUtilities
 			}
 		}
 
+		/// <summary>
+		/// This is a very usfull all-purpose method to run a script file as an SQL command.
+		/// </summary>
+		/// <param name="fName">Full path to the script file (e.g. c:\MyProject\DB\Proc\GetRec.sql)</param>
+		/// <returns>success/failure</returns>
 		static bool RunScript(string fName)
 		{
 			try

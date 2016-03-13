@@ -1,3 +1,6 @@
+DBDev aids in the maintinance of databases through the software development
+life cycle by automating what is normally error prone manual work.
+
 Software development almost always involves a database. Done properly there should be a separate 
 database for each phase: DEV, QA, UAT and PROD. Changes to DEV need to propogate to the others and
 that is the problem: How to know what changes have been made to which servers and which haven't.
@@ -11,22 +14,22 @@ All (and I do mean ALL) DDL commands (creating, altering, dropping of the tables
 should be performed as sequentially named script files also stored in a folder under the project 
 folder (e.g. "c:\myProject\DB\Deltas"). Include everything as scripts: create a table, add a 
 column to that table, drop that column, add an index to that table, change the index, etc. By
-scripting all the deltas you can create the whole database; just runn the sequence. One good 
+scripting all the deltas you can create the whole database; just run the sequence. One good 
 way is to date each change file (e.g. 20160322A.sql). Also, include in the database a table
 of all the scripts that have been run on this database so you can track what has and hasn't 
 been run.
 
-My utility DBDev handles all this (and more) for you: 
+DBDev handles all this (and more) for you: 
   1) If the database doesn't exist it creates it.
   2) If the deltas table doesn't exist it creates it.
   3) it compares the list of files in the deltas folder with the deltas table and runs, 
   in order, the un-run scripts and adds them to the table
   4) it runs all the scripts in the procs folder to refresh the stored procedures (etc.).
 
-To run it *requires* three parameters: 
+It *requires* three parameters: 
   1) the connection string to the database.
   2) the name of the database (it doesn't need to exist on the given server yet)
-  3) the path to the project (under which the db folder resides)
+  3) the path to your project (under which the db folder resides)
 
 The command line options and their defaults:
 [NoWait]                Don't wait for keystroke after run is finished.
@@ -35,4 +38,8 @@ The command line options and their defaults:
 [DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts are stored.
 [ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure scripts are stored.
 [DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored procedure scripts.
+
+Given these defaults you'll have a folder named DB in your project, and in DB will be the folders 
+Delta and Proc. If you are running this as a build pre or post process you will want the NoWait 
+option.
 
