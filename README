@@ -1,5 +1,5 @@
 Software development almost always involves a database. Done properly there should be a separate 
-server for each phase: DEV, QA, UAT and PROD. Changes to DEV need to propogate to the others and
+database for each phase: DEV, QA, UAT and PROD. Changes to DEV need to propogate to the others and
 that is the problem: How to know what changes have been made to which servers and which haven't.
 
 Stored Procedures, Views, Triggers and Functions need be created as script files, stored under 
@@ -21,9 +21,18 @@ My utility DBDev handles all this (and more) for you:
   2) If the deltas table doesn't exist it creates it.
   3) it compares the list of files in the deltas folder with the deltas table and runs, 
   in order, the un-run scripts and adds them to the table
-  4) it runs all the scripts in the procs folder to refresh the stored procedures.
+  4) it runs all the scripts in the procs folder to refresh the stored procedures (etc.).
 
-To run it requires three parameters: 
+To run it *requires* three parameters: 
   1) the connection string to the database.
   2) the name of the database (it doesn't need to exist on the given server yet)
   3) the path to the project (under which the db folder resides)
+
+The command line options and their defaults:
+[NoWait]                Don't wait for keystroke after run is finished.
+[DeltaTable=_Delta]     Name to store the delta scripts that have been run already.
+|DBDir=DB]              The sub-dir under the ProjectDir where the scripts persist.
+[DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts are stored.
+[ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure scripts are stored.
+[DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored procedure scripts.
+
