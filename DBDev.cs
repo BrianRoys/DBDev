@@ -122,6 +122,7 @@ namespace DataBaseUtilities
 		{
 			try
 			{
+
 				// Create the table if it doesn't exist.
 				string sql = @"
 					IF OBJECT_ID('{0}', 'U') IS NULL

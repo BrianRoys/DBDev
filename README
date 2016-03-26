@@ -1,30 +1,44 @@
+-------------------------------------------------------------------------------
 DBDev aids in the maintinance of databases through the software development
 life cycle by automating what is normally error prone manual work.
 
-Software development almost always involves a database. Done properly there should be a separate 
-database for each phase: DEV, QA, UAT and PROD. Changes to DEV need to propogate to the others and
-that is the problem: How to know what changes have been made to which servers and which haven't.
+Software development almost always involves a database. Done properly there 
+should be a separate database for each phase: DEV, QA, UAT and PROD. At the 
+very least DEV and PROD. Changes to DEV need to propogate to the others and 
+that is the problem: How to know what changes have been made to which servers 
+and which haven't.
 
-Stored Procedures, Views, Triggers and Functions need be created as script files, stored under 
-the project folder (e.g. "c:\myProject\DB\Procs"). Then to update or synchronize a server just 
-run all the scripts. It can be managed as a manual process but is only workable where there are
-only a few scripts.
+Best Practices state that Stored Procedures, Views, Triggers and Functions 
+need be created through script files. These should be stored under the project 
+folder (e.g. "c:\myProject\DB\Procs"). Then to update or synchronize a server 
+just run all the scripts. It can be managed as a manual process but is only 
+workable where there are only a few scripts. Of course for this to work these 
+scripts must be edimpotent (i.e. you can run them multiple times and get the 
+same results every time) by the intelligent use of if's and drops, etc.
 
-All (and I do mean ALL) DDL commands (creating, altering, dropping of the tables and indexes) 
-should be performed as sequentially named script files also stored in a folder under the project 
-folder (e.g. "c:\myProject\DB\Deltas"). Include everything as scripts: create a table, add a 
-column to that table, drop that column, add an index to that table, change the index, etc. By
-scripting all the deltas you can create the whole database; just run the sequence. One good 
-way is to date each change file (e.g. 20160322A.sql). Also, include in the database a table
-of all the scripts that have been run on this database so you can track what has and hasn't 
-been run.
+All (and I do mean ALL) DDL commands (creating, altering, dropping of the 
+tables and indexes) should be performed as sequentially named script files 
+also stored in a folder under the project folder (e.g. "c:\myProject\DB\Deltas"). 
+Include everything as scripts: create a table, add a column to that table, drop 
+that column, add an index to that table, change the index, etc. By scripting all 
+the deltas you can create the whole database; just run the sequence. One good 
+way is to date each change file (e.g. 20160322A.sql). Also, include in the 
+database a table of all the scripts that have been run on this database so you 
+can track what has and hasn't been run. Of course this is a tedious manual 
+process but easy to automate (i.e. DBDev).
+
+By having the scripts in the project folder structure you can easily include 
+them in source control. And new user can pull the source and run this utility 
+to build a complete new/fresh database wherever (e.g. localhost) they want.
 
 DBDev handles all this (and more) for you: 
   1) If the database doesn't exist it creates it.
   2) If the deltas table doesn't exist it creates it.
-  3) it compares the list of files in the deltas folder with the deltas table and runs, 
+  3) it compares the list of files in the deltas folder with the deltas table 
+  and runs, 
   in order, the un-run scripts and adds them to the table
-  4) it runs all the scripts in the procs folder to refresh the stored procedures (etc.).
+  4) it runs all the scripts in the procs folder to refresh the stored 
+  procedures (etc.).
 
 It *requires* three parameters: 
   1) the connection string to the database.
@@ -33,13 +47,17 @@ It *requires* three parameters:
 
 The command line options and their defaults:
 [NoWait]                Don't wait for keystroke after run is finished.
-[DeltaTable=_Delta]     Name to store the delta scripts that have been run already.
-|DBDir=DB]              The sub-dir under the ProjectDir where the scripts persist.
-[DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts are stored.
-[ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure scripts are stored.
-[DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored procedure scripts.
+[DeltaTable=_Delta]     Name to store the delta scripts that have been run 
+						already.
+|DBDir=DB]              The sub-dir under the ProjectDir where the scripts 
+						persist.
+[DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts 
+						are stored.
+[ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure 
+						scripts are stored.
+[DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored 
+						procedure scripts.
 
-Given these defaults you'll have a folder named DB in your project, and in DB will be the folders 
-Delta and Proc. If you are running this as a build pre or post process you will want the NoWait 
-option.
-
+Given these defaults you'll have a folder named DB in your project, and in DB 
+will be the folders Delta and Proc. If you are running this as a build pre or 
+post process you will want the NoWait option.
