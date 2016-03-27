@@ -12,12 +12,16 @@ namespace DataBaseUtilities
 {
 	class DBDev
 	{
-		static Boolean gDoDeltas = true;
-		static Boolean gDoSPs = true;
-		static Boolean gDoWait = true;
+
+		// These must be provided in the command line parameters.
 		static string gConnectionString = null;
 		static string gDBName = null;
 		static string gProjectDir = null;
+
+		// These may be overridden by command line parameters.
+		static Boolean gDoDeltas = true;
+		static Boolean gDoSPs = true;
+		static Boolean gDoWait = true;
 		static string gDeltasTableName = "_Delta";
 		static string gDBDir = "DB";
 		static string gDeltaDir = "Delta";
@@ -27,6 +31,8 @@ namespace DataBaseUtilities
 		// TODO: Currently this utility is targeted for Microsoft SQL Server. Other servers 
 		// should be included with a server=MSSQL as default.  (MySQL to start with).
 
+		// TODO: Somehow work in variable/multiple schemas in to the processes.
+		`
 		static void Main(string[] args)
 		{
 			Console.WriteLine("DBDev: Data Base Development utility.");

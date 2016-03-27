@@ -8,6 +8,9 @@ very least DEV and PROD. Changes to DEV need to propogate to the others and
 that is the problem: How to know what changes have been made to which servers 
 and which haven't.
 
+This project was developed under VisualStudio 2015 but doesn't do anything
+fancy.
+
 Best Practices state that Stored Procedures, Views, Triggers and Functions 
 need be created through script files. These should be stored under the project 
 folder (e.g. "c:\myProject\DB\Procs"). Then to update or synchronize a server 
@@ -52,12 +55,47 @@ The command line options and their defaults:
 |DBDir=DB]              The sub-dir under the ProjectDir where the scripts 
 						persist.
 [DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts 
-						are stored.
+						are stored. These will be run once per database.
 [ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure 
-						scripts are stored.
+						scripts are stored. These are run every time.
 [DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored 
 						procedure scripts.
 
 Given these defaults you'll have a folder named DB in your project, and in DB 
 will be the folders Delta and Proc. If you are running this as a build pre or 
 post process you will want the NoWait option.
+
+-------------------------------------------------------------------------------
+
+Typical Scenarios and Work Flows:
+
+You start a project MyProjectXYZ so after you create the project in 
+VisualStudio and under d:\development\MyProjectXYZ you add \DB\, \DB\Delta and 
+\DB\Proc\. Then you run:
+
+DBDev "datasource=localhost;etc..." XYZ d:\development\MyProjectXYZ
+
+and it will create the database and add the Delta table.
+
+You write a number of scripts to add tables with their columns and keys and 
+indexes, etc. These are all named per the day they were written plus 'a', 'b', 
+'c', etc. You run these and the changes are effected on your development PC. 
+These get committed into your Git and pushed to the server where other 
+developers pull them and run DBDev on their machines.
+
+You then realize you mixed table names between singular and plural and after 
+having an armwrestling contest settle on signular as a standard. But since you
+already checked them into source control, as soon as you did this those scripts
+were locked. Changes to the database must now be done through new scripts; you 
+can't change the scripts that have already been checked in as someone may have 
+alreay run them on other servers. So you write a set of scripts that change the 
+names of the already existing tables.
+
+Work progresses on the projct and more scripts are written to add new tables, 
+change indexes, define stored procedures or views, etc. You run DBDev each 
+time and your database is up-to-date. 
+
+Now you need to stand up the QA database: just change the connection string 
+parameter and run DBDev!
+
+-------------------------------------------------------------------------------
