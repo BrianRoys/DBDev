@@ -32,7 +32,7 @@ namespace DataBaseUtilities
 		// should be included with a server=MSSQL as default.  (MySQL to start with).
 
 		// TODO: Somehow work in variable/multiple schemas in to the processes.
-		`
+		
 		static void Main(string[] args)
 		{
 			Console.WriteLine("DBDev: Data Base Development utility.");
