@@ -1,26 +1,27 @@
 -------------------------------------------------------------------------------
-DBDev aids in the maintinance of your database through the software development
-life cycle (SDLC) by automating the normally error prone manual job of keeping
-the databases in-synch and up-to-date.
+DBDev aids in the maintinance of your database throughout the software 
+development life cycle (SDLC) by automating the normally error prone manual 
+job of keeping the databases in-synch and up-to-date.
 
 Done properly there should be a separate database for each phase: DEV, QA, UAT 
-and PROD. At the very least DEV and PROD. Changes to DEV need to propogate to 
+and PROD. At the very least DEV and PROD. Changes to DEV need to propagate to 
 the others and that is the problem: How to know what changes have been made to 
 which servers and which haven't.
 
 This project was developed under VisualStudio 2015 but doesn't do anything
-fancy.
+fancy should should be fine under most compilers.
 
 All (and I do mean ALL) DDL commands (creating, altering, dropping of the 
-tables and indexes) should be performed as sequentially named script files 
-also stored in a folder under the project folder (e.g. "c:\myProject\DB\Delta"). 
-Include everything as scripts: create a table, add a column to that table, drop 
-that column, add an index to that table, change the index, etc. By scripting all 
-the deltas you can create the whole database; just run the sequence. One good 
-way is to date each change file (e.g. 20160322A.sql). Also, include in the 
-database a table of all the scripts that have been run on this database so you 
-can track what has and hasn't been run. Of course this is a tedious manual 
-process but easy to automate (i.e. DBDev).
+tables, columns and indexes, etc.) should be performed as sequentially named 
+script files also stored in a folder under the project folder 
+(e.g. "c:\myProj\DB\Deltas"). Include everything as scripts: create a table, 
+add a column to that table, drop that column, add an index to that table, 
+change the index, etc. By scripting all the deltas you can create the whole 
+database; just run the sequence. One good way is to date each change file 
+(e.g. 20160322A.sql). Also, include in the database a table of all the scripts 
+that have been run on this database so you can track what has and hasn't been 
+run. Of course this is a tedious manual process but easy to automate 
+(i.e. DBDev).
 
 Best Practices state that Stored Procedures, Views, Triggers and Functions 
 need be created through script files. These should be stored under the project 
@@ -53,9 +54,9 @@ The command line options and their defaults:
 						already.
 |DBDir=DB]              The sub-dir under the ProjectDir where the scripts 
 						persist.
-[DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts 
+[DeltaDir=Deltas]       The sub-dir under the DBDir where the delta scripts 
 						are stored. These will be run once per database.
-[ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure 
+[ProcDir=Procs]         The sub-dir under the DBDir where the stored procedure 
 						scripts are stored. These are run every time.
 [DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored 
 						procedure scripts.
@@ -74,7 +75,7 @@ VisualStudio and under d:\development\MyProjectXYZ you add \DB\, \DB\Delta and
 
 DBDev "datasource=localhost;etc..." XYZ d:\development\MyProjectXYZ
 
-and it will create the database and add the Delta table.
+...and it will create the XYZ database and add the Delta table.
 
 You write a number of scripts to add tables with their columns and keys and 
 indexes, etc. These are all named per the day they were written plus 'a', 'b', 
@@ -95,6 +96,8 @@ change indexes, define stored procedures or views, etc. You run DBDev each
 time and your database is up-to-date. 
 
 Now you need to stand up the QA database: just change the connection string 
-parameter and run DBDev!
-
+parameter and run DBDev! The new & empty database will be created and all the 
+scripts run to create the objects. You will see tables added and then in a 
+later script dropped! Columns added only to later be renamed. This is all OK
+and as it should be.
 -------------------------------------------------------------------------------

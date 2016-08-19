@@ -12,31 +12,40 @@ namespace DataBaseUtilities
 {
 	class DBDev
 	{
+		// SAMPLE PARAMETERS:
+		// "Data Source=BRIAN-PC\SQLEXPRESS;Integrated Security=SSPI;"  DBMaint E:\Utilities\DBDev
 
-		// These must be provided in the command line parameters.
+		// These MUST be provided in the command line parameters: 1, 2, 3.
 		static string gConnectionString = null;
 		static string gDBName = null;
 		static string gProjectDir = null;
 
 		// These may be overridden by command line parameters.
+		// Table names should be standardized either plural or singular. 
+		// I'm going with singular because sometimes tables will only 
+		// ever hold one record (e.g. CompanyInfo) and it would be 
+		// silly to name that table plural. But you can always do a 
+		// "save it to the Employee table". So SINGULAR.
+
 		static Boolean gDoDeltas = true;
 		static Boolean gDoSPs = true;
 		static Boolean gDoWait = true;
 		static string gDeltasTableName = "_Delta";
 		static string gDBDir = "DB";
-		static string gDeltaDir = "Delta";
-		static string gProcDir = "Proc";
+		static string gDeltaDir = "Deltas";
+		static string gProcDir = "Procs";
 		static SqlConnection gConnection = null;
 
 		// TODO: Currently this utility is targeted for Microsoft SQL Server. Other servers 
 		// should be included with a server=MSSQL as default.  (MySQL to start with).
 
 		// TODO: Somehow work in variable/multiple schemas in to the processes.
-		
+
 		static void Main(string[] args)
 		{
 			Console.WriteLine("DBDev: Data Base Development utility.");
-			if (ParseArgs(args))
+			Console.WriteLine();
+            if (ParseArgs(args))
 			{
 				try
 				{
@@ -46,7 +55,8 @@ namespace DataBaseUtilities
 						gConnection.Open();
 						CreateDB();
 						ProcessDeltas();
-						UpdateSPs();
+						UpdateStoredProcs();
+						gConnection.Close();
 					}
 				}
 				catch (Exception ex)
@@ -82,7 +92,7 @@ namespace DataBaseUtilities
 			}
 		}
 
-		static void UpdateSPs()
+		static void UpdateStoredProcs()
 		{
 			if (gDoSPs)
 			{
@@ -105,14 +115,41 @@ namespace DataBaseUtilities
 			{
 				Console.WriteLine(string.Format("Running SQL script: {0}.", fName));
 
-				string fileContents = File.ReadAllText(fName);
+				StringBuilder sb = new StringBuilder();
+				System.IO.StreamReader sr = new StreamReader(fName);
+				SqlCommand cmd;
+                String line;
 
-				// Implement GO syntax al'la SQL Management Studio; break the script into
-				// multiple segments and run them individually.
-				string[] segments = fileContents.Split(new string[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
-				foreach (string segment in segments)
+				// Implement GO syntax al'la SQL Management Studio; read the script 
+				// line-by-line, executing every time you hit a "GO" line and once
+				// at the end.
+				while ((line = sr.ReadLine()) != null)
 				{
-					SqlCommand cmd = new SqlCommand(segment, gConnection);
+					line = line.Trim();
+
+					// Strip out comments as we go.
+					int idx = line.IndexOf("-- ");
+					if (idx >= 0)
+					{
+						line = line.Substring(0, idx);
+					}
+					if ((line.CompareTo("GO") == 0) || (line.CompareTo("GO;") == 0))
+                    {
+						if (sb.Length > 0)
+						{
+							cmd = new SqlCommand(sb.ToString(), gConnection);
+							cmd.ExecuteNonQuery();
+							sb.Clear();
+						}
+					}
+					else
+					{
+						sb.AppendLine(line);
+					}
+				}
+				if (sb.Length > 0)
+				{
+					 cmd = new SqlCommand(sb.ToString(), gConnection);
 					cmd.ExecuteNonQuery();
 				}
 			}
@@ -122,7 +159,7 @@ namespace DataBaseUtilities
 				return false;
 			}
 			return true;
-		}
+		 }
 
 		static void DeltaTableInit()
 		{
@@ -135,7 +172,7 @@ namespace DataBaseUtilities
 					BEGIN 
 						CREATE TABLE {0} ([Name] NVARCHAR(1024));
 					END;";
-                SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltasTableName), gConnection);
+				SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltasTableName), gConnection);
 				cmd.ExecuteNonQuery();
 			}
 			catch (Exception ex)
@@ -187,12 +224,17 @@ Processes SQL script files in <ProjectDir><DBDir><DeltasDir> and <ProjectDir><DB
 
 OPTIONS:
 [NoWait]                Don't wait for keystroke after run is finished.
-[DeltaTable=_Delta]     Name to store the delta scripts that have been run already.
-|DBDir=DB]              The sub-dir under the ProjectDir where the scripts persist.
-[DeltaDir=Delta]        The sub-dir under the DBDir where the delta scripts are stored.
-[ProcDir=Proc]          The sub-dir under the DBDir where the stored procedure scripts are stored.
-[DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored procedure scripts.
+[DeltaTable=_Delta]     Name of table to store the already run delta scripts.
+|DBDir=DB]              The sub-dir under the ProjectDir where the scripts.
+[DeltaDir=Deltas]       The sub-dir under the DBDir for the delta scripts.
+[ProcDir=Procs]         The sub-dir under the DBDir for the procedure scripts.
+[DeltasOnly|ProcsOnly]  Either process just deltas or stored procedure scripts.
 ";
+
+/*
+          1         2         3         4         5         6         7         8
+012345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
 
 			if (args.Length < 3)
 			{
@@ -247,12 +289,11 @@ OPTIONS:
 						CREATE DATABASE {0}; 
 					END";
 
-                SqlCommand cmd = new SqlCommand(string.Format(sql, gDBName), gConnection);
+				SqlCommand cmd = new SqlCommand(string.Format(sql, gDBName), gConnection);
 				cmd.ExecuteNonQuery();
 
 				// All subsequent commands will apply to the selected DB.
-				sql = "USE {0};";
-				cmd.CommandText = string.Format(sql, gDBName);
+				cmd.CommandText = string.Format("USE {0};", gDBName);
 				cmd.ExecuteNonQuery();
 			}
 			catch (Exception ex)
@@ -264,26 +305,26 @@ OPTIONS:
 		static void VerifyDirs()
 		{
 			string dir;
-			if(!Directory.Exists(gProjectDir))
+			if (!Directory.Exists(gProjectDir))
 			{
 				throw new Exception("Project directory [" + gProjectDir + "] does not exist.");
 			}
 			dir = Path.Combine(gProjectDir, gDBDir);
-            if (!Directory.Exists(dir))
-            {
+			if (!Directory.Exists(dir))
+			{
 				throw new Exception("Database root directory [" + dir + "] does not exist.");
 			}
 			dir = Path.Combine(gProjectDir, gDBDir, gDeltaDir);
-            if (!Directory.Exists(dir))
-            {
+			if (!Directory.Exists(dir))
+			{
 				throw new Exception("Deltas directory [" + dir + "] does not exist.");
 			}
 			dir = Path.Combine(gProjectDir, gDBDir, gProcDir);
 			if (!Directory.Exists(Path.Combine(gProjectDir, gDBDir, gProcDir)))
-            {
+			{
 				throw new Exception("Procedure directory [" + dir + "] does not exist.");
 			}
-        }
+		}
 	}
 }
 
