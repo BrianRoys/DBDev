@@ -28,7 +28,7 @@ namespace DataBaseUtilities
 		// "save it to the Employee table". So SINGULAR.
 
 		static Boolean gDoDeltas = true;
-		static Boolean gDoSPs = true;
+		static Boolean gDoStoredProcedures = true;
 		static Boolean gDoWait = true;
 		static string gDeltasTableName = "_Delta";
 		static string gDBDir = "DB";
@@ -56,7 +56,6 @@ namespace DataBaseUtilities
 						CreateDB();
 						ProcessDeltas();
 						UpdateStoredProcs();
-						gConnection.Close();
 					}
 				}
 				catch (Exception ex)
@@ -79,12 +78,17 @@ namespace DataBaseUtilities
 
 				List<string> scriptsRun = DeltaTableGetAll();
 				List<string> fileNames = Directory.GetFiles(Path.Combine(gProjectDir, gDBDir, gDeltaDir), "*.sql").OrderBy(e => e).ToList();
-				foreach (string fName in fileNames)
+				foreach (string fPath in fileNames)
 				{
-					if (!scriptsRun.Contains(fName))
+					// fName at this point is a full path and I want to use just the file name itself.
+					String fName = Path.GetFileName(fPath);
+                    if (!scriptsRun.Contains(fName))
 					{
-						if (RunScript(fName))
+						if (RunScript(fPath))
 						{
+
+							// Only if the script ran successfully store the name in the table.
+							// The idea being if it failed you need to fix it and re-run it.
 							DeltaTableAdd(fName);
 						}
 					}
@@ -94,7 +98,7 @@ namespace DataBaseUtilities
 
 		static void UpdateStoredProcs()
 		{
-			if (gDoSPs)
+			if (gDoStoredProcedures)
 			{
 				List<string> fileNames = Directory.GetFiles(Path.Combine(gProjectDir, gDBDir, gProcDir), "*.sql").OrderBy(e => e).ToList();
 				foreach (string fName in fileNames)
@@ -116,41 +120,44 @@ namespace DataBaseUtilities
 				Console.WriteLine(string.Format("Running SQL script: {0}.", fName));
 
 				StringBuilder sb = new StringBuilder();
-				System.IO.StreamReader sr = new StreamReader(fName);
-				SqlCommand cmd;
-                String line;
-
-				// Implement GO syntax al'la SQL Management Studio; read the script 
-				// line-by-line, executing every time you hit a "GO" line and once
-				// at the end.
-				while ((line = sr.ReadLine()) != null)
+				using (System.IO.StreamReader sr = new StreamReader(fName))
 				{
-					line = line.Trim();
+					SqlCommand cmd;
+					String line;
 
-					// Strip out comments as we go.
-					int idx = line.IndexOf("-- ");
-					if (idx >= 0)
+					// Implement GO syntax al'la SQL Management Studio; read the script 
+					// line-by-line, executing every time you hit a "GO" line and once
+					// at the end.
+					while ((line = sr.ReadLine()) != null)
 					{
-						line = line.Substring(0, idx);
-					}
-					if ((line.CompareTo("GO") == 0) || (line.CompareTo("GO;") == 0))
-                    {
-						if (sb.Length > 0)
+						line = line.Trim();
+
+						// Strip out comments as we go.
+						int idx = line.IndexOf("-- ");
+						if (idx >= 0)
 						{
-							cmd = new SqlCommand(sb.ToString(), gConnection);
-							cmd.ExecuteNonQuery();
-							sb.Clear();
+							line = line.Substring(0, idx);
+						}
+						if ((line.ToUpper().CompareTo("GO") == 0)
+						|| (line.ToUpper().CompareTo("GO;") == 0))
+							{
+								if (sb.Length > 0)
+							{
+								cmd = new SqlCommand(sb.ToString(), gConnection);
+								cmd.ExecuteNonQuery();
+								sb.Clear();
+							}
+						}
+						else
+						{
+							sb.AppendLine(line);
 						}
 					}
-					else
+					if (sb.Length > 0)
 					{
-						sb.AppendLine(line);
+						cmd = new SqlCommand(sb.ToString(), gConnection);
+						cmd.ExecuteNonQuery();
 					}
-				}
-				if (sb.Length > 0)
-				{
-					 cmd = new SqlCommand(sb.ToString(), gConnection);
-					cmd.ExecuteNonQuery();
 				}
 			}
 			catch (Exception ex)
@@ -159,7 +166,7 @@ namespace DataBaseUtilities
 				return false;
 			}
 			return true;
-		 }
+		}
 
 		static void DeltaTableInit()
 		{
@@ -256,7 +263,7 @@ OPTIONS:
 				gProjectDir = args[2];
 				gDoWait = !args.Contains("nowait");
 				gDoDeltas = !args.Contains("ProcsOnly");
-				gDoSPs = !args.Contains("DeltasOnly");
+				gDoStoredProcedures = !args.Contains("DeltasOnly");
 				OverrideValue(ref gDBDir, "DBDir", args);
 				OverrideValue(ref gProcDir, "ProcDir", args);
 				OverrideValue(ref gDeltaDir, "DeltaDir", args);
