@@ -30,10 +30,10 @@ namespace DataBaseUtilities
 		static Boolean gDoDeltas = true;
 		static Boolean gDoStoredProcedures = true;
 		static Boolean gDoWait = true;
-		static string gDeltasTableName = "_Delta";
+		static string gDeltaTableName = "_Delta";
 		static string gDBDir = "DB";
-		static string gDeltaDir = "Deltas";
-		static string gProcDir = "Procs";
+		static string gDeltaDir = "Delta";
+		static string gProcDir = "Proc";
 		static SqlConnection gConnection = null;
 
 		// TODO: Currently this utility is targeted for Microsoft SQL Server. Other servers 
@@ -45,7 +45,7 @@ namespace DataBaseUtilities
 		{
 			Console.WriteLine("DBDev: Data Base Development utility.");
 			Console.WriteLine();
-            if (ParseArgs(args))
+			if (ParseArgs(args))
 			{
 				try
 				{
@@ -77,12 +77,15 @@ namespace DataBaseUtilities
 				DeltaTableInit();
 
 				List<string> scriptsRun = DeltaTableGetAll();
-				List<string> fileNames = Directory.GetFiles(Path.Combine(gProjectDir, gDBDir, gDeltaDir), "*.sql").OrderBy(e => e).ToList();
+				List<string> fileNames = Directory
+					.GetFiles(Path.Combine(gProjectDir, gDBDir, gDeltaDir), "*.sql")
+					.OrderBy(e => e)
+					.ToList();
 				foreach (string fPath in fileNames)
 				{
 					// fName at this point is a full path and I want to use just the file name itself.
 					String fName = Path.GetFileName(fPath);
-                    if (!scriptsRun.Contains(fName))
+					if (!scriptsRun.Contains(fName))
 					{
 						if (RunScript(fPath))
 						{
@@ -140,8 +143,8 @@ namespace DataBaseUtilities
 						}
 						if ((line.ToUpper().CompareTo("GO") == 0)
 						|| (line.ToUpper().CompareTo("GO;") == 0))
-							{
-								if (sb.Length > 0)
+						{
+							if (sb.Length > 0)
 							{
 								cmd = new SqlCommand(sb.ToString(), gConnection);
 								cmd.ExecuteNonQuery();
@@ -179,7 +182,7 @@ namespace DataBaseUtilities
 					BEGIN 
 						CREATE TABLE {0} ([Name] NVARCHAR(1024));
 					END;";
-				SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltasTableName), gConnection);
+				SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltaTableName), gConnection);
 				cmd.ExecuteNonQuery();
 			}
 			catch (Exception ex)
@@ -194,7 +197,7 @@ namespace DataBaseUtilities
 			string sql = @"
 				SELECT * FROM {0};";
 
-			SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltasTableName), gConnection);
+			SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltaTableName), gConnection);
 			SqlDataReader reader = cmd.ExecuteReader();
 			while (reader.Read())
 			{
@@ -213,7 +216,7 @@ namespace DataBaseUtilities
 						([Name])
 					VALUES 
 						('{1}')";
-				SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltasTableName, fName), gConnection);
+				SqlCommand cmd = new SqlCommand(string.Format(sql, gDeltaTableName, fName), gConnection);
 				cmd.ExecuteNonQuery();
 			}
 			catch (Exception ex)
@@ -233,13 +236,13 @@ OPTIONS:
 [NoWait]                Don't wait for keystroke after run is finished.
 [DeltaTable=_Delta]     Name of table to store the already run delta scripts.
 |DBDir=DB]              The sub-dir under the ProjectDir where the scripts.
-[DeltaDir=Deltas]       The sub-dir under the DBDir for the delta scripts.
-[ProcDir=Procs]         The sub-dir under the DBDir for the procedure scripts.
+[DeltaDir=Delta]        The sub-dir under the DBDir for the delta scripts.
+[ProcDir=Proc]          The sub-dir under the DBDir for the procedure scripts.
 [DeltasOnly|ProcsOnly]  Either process just deltas or stored procedure scripts.
 ";
 
 /*
-          1         2         3         4         5         6         7         8
+0         1         2         3         4         5         6         7         8
 012345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 
@@ -261,13 +264,13 @@ OPTIONS:
 				gConnectionString = args[0];
 				gDBName = args[1];
 				gProjectDir = args[2];
-				gDoWait = !args.Contains("nowait");
-				gDoDeltas = !args.Contains("ProcsOnly");
-				gDoStoredProcedures = !args.Contains("DeltasOnly");
+				gDoWait = !args.Contains("nowait", StringComparer.CurrentCultureIgnoreCase);
+				gDoDeltas = !args.Contains("ProcsOnly", StringComparer.CurrentCultureIgnoreCase);
+				gDoStoredProcedures = !args.Contains("DeltasOnly", StringComparer.CurrentCultureIgnoreCase);
 				OverrideValue(ref gDBDir, "DBDir", args);
 				OverrideValue(ref gProcDir, "ProcDir", args);
 				OverrideValue(ref gDeltaDir, "DeltaDir", args);
-				OverrideValue(ref gDeltasTableName, "DeltaTable", args);
+				OverrideValue(ref gDeltaTableName, "DeltaTable", args);
 			}
 			return true;
 		}

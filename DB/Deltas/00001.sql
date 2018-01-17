@@ -1,0 +1,1 @@
+CREATE TABLE Table2 ([Name]  NVARCHAR(256));
