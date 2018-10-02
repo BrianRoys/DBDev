@@ -1,15 +1,12 @@
 -------------------------------------------------------------------------------
 DBDev aids in the maintinance of your database throughout the software 
-development life cycle (SDLC) by automating the normally error prone manual 
+development life cycle by automating the normally error prone manual 
 job of keeping the databases in-synch and up-to-date.
 
 Done properly there should be a separate database for each phase: DEV, QA, UAT 
 and PROD. At the very least DEV and PROD. Changes to DEV need to propagate to 
 the others and that is the problem: How to know what changes have been made to 
 which servers and which haven't.
-
-This project was developed under VisualStudio 2015 but doesn't do anything
-fancy should should be fine under most compilers.
 
 All (and I do mean ALL) DDL commands (creating, altering, dropping of the 
 tables, columns and indexes, etc.) should be performed as sequentially named 
@@ -28,7 +25,7 @@ need be created through script files. These should be stored under the project
 folder (e.g. "c:\myProject\DB\Procs"). Then to update or synchronize a server 
 just run all the scripts. It can be managed as a manual process but is only 
 workable where there are only a few scripts. Of course for this to work these 
-scripts must be edimpotent (i.e. you can run them multiple times and get the 
+scripts must be idempotent (i.e. you can run them multiple times and get the 
 same results every time) by the intelligent use of if's and drops, etc.
 
 By having the scripts in the project folder structure you can easily include 
@@ -101,3 +98,6 @@ scripts run to create the objects. You will see tables added and then in a
 later script dropped! Columns added only to later be renamed. This is all OK
 and as it should be.
 -------------------------------------------------------------------------------
+
+This project was developed under VisualStudio 2015 but doesn't do anything
+fancy should should be fine under most compilers.
