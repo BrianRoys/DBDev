@@ -14,7 +14,7 @@ script files also stored in a folder under the project folder
 (e.g. "c:\myProj\DB\Deltas"). Include everything as scripts: create a table, 
 add a column to that table, drop that column, add an index to that table, 
 change the index, etc. By scripting all the deltas you can create the whole 
-database; just run the sequence. One good way is to date each change file 
+database; just run the sequence. One good way is to date-name each file 
 (e.g. 20160322A.sql). Also, include in the database a table of all the scripts 
 that have been run on this database so you can track what has and hasn't been 
 run. Of course this is a tedious manual process but easy to automate 
@@ -22,7 +22,7 @@ run. Of course this is a tedious manual process but easy to automate
 
 Best Practices state that Stored Procedures, Views, Triggers and Functions 
 need be created through script files. These should be stored under the project 
-folder (e.g. "c:\myProject\DB\Procs"). Then to update or synchronize a server 
+folder (e.g. "c:\myProj\DB\Procs"). Then to update or synchronize a server 
 just run all the scripts. It can be managed as a manual process but is only 
 workable where there are only a few scripts. Of course for this to work these 
 scripts must be idempotent (i.e. you can run them multiple times and get the 
@@ -47,16 +47,11 @@ It *requires* three parameters:
 
 The command line options and their defaults:
 [NoWait]                Don't wait for keystroke after run is finished.
-[DeltaTable=_Delta]     Name to store the delta scripts that have been run 
-						already.
-|DBDir=DB]              The sub-dir under the ProjectDir where the scripts 
-						persist.
-[DeltaDir=Deltas]       The sub-dir under the DBDir where the delta scripts 
-						are stored. These will be run once per database.
-[ProcDir=Procs]         The sub-dir under the DBDir where the stored procedure 
-						scripts are stored. These are run every time.
-[DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored 
-						procedure scripts.
+[DeltaTable=_Delta]     Name to store the delta scripts that have been run already.
+|DBDir=DB]              The sub-dir under the ProjectDir where the scripts persist.
+[DeltaDir=Deltas]       The sub-dir under the DBDir where the delta scripts are stored. These will be run once per database.
+[ProcDir=Procs]         The sub-dir under the DBDir where the stored procedure scripts are stored. These are run every time.
+[DeltasOnly|ProcsOnly]  Either process just the deltas or just the stored procedure scripts.
 
 Given these defaults you'll have a folder named DB in your project, and in DB 
 will be the folders Delta and Proc. If you are running this as a build pre or 
